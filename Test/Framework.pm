@@ -29,6 +29,7 @@ sub new {
         run => 0,
         succeeded => 0,
         failed => 0,
+        scheduled => 0,
     };
 
     $test_class->{name} = $test_class_name;
@@ -302,15 +303,38 @@ sub run {
     }
 
     foreach (@tests) {
-        if (not defined($self->{cases}->{$_})) {
+        if ($_ eq $self->{name}) {
+            @tests = sort(keys(%{$self->{cases}}));
+            last;
+        };
+    }
+
+    foreach (@tests) {
+        my $test_class_name = $self->{name};
+        my $test_name = $_;
+
+        ++$self->{counters}->{scheduled};
+
+        if ((not $test_name =~ /^test_/) && (not $test_name =~ /\./)) {
+            next;
+        };
+        if ($test_name =~ /\./) {
+            ($test_class_name, $test_name) = split(/\./, $test_name);
+        };
+
+        if ($test_class_name ne $self->{name}) {
+            next;
+        };
+
+        if (not defined($self->{cases}->{$test_name})) {
             die($self->{name} . ".$_: test not registered");
         };
 
         ++$self->{counters}->{run};
 
-        print("$self->{name}.$_ ... ");
+        print("$test_class_name.$test_name ... ");
         eval {
-            $self->{cases}->{$_}->($self);
+            $self->{cases}->{$test_name}->($self);
             say('ok');
         };
         if ($@) {
@@ -318,7 +342,7 @@ sub run {
             say("fail: $@");
 
             ++$self->{counters}->{failed};
-            $self->{failures}->{$_} = (split('at Test/Framework', $@))[0];
+            $self->{failures}->{$test_name} = (split('at Test/Framework', $@))[0];
 
             if ($self->{failfast}) {
                 last;
@@ -337,7 +361,7 @@ sub print_summary {
     my $self = shift;
 
     say("\n>>>> $self->{name}: summary");
-    say(" - $self->{counters}->{run} test(s) run");
+    say(" - $self->{counters}->{run} test(s) run (out of $self->{counters}->{scheduled} scheduled)");
     say("   + $self->{counters}->{succeeded} test(s) succeeded");
     say("   + $self->{counters}->{failed} test(s) failed");
     if ($self->{counters}->{failed}) {
@@ -359,24 +383,27 @@ sub run_suite {
 
     my $i = 0;
     my $limit = scalar(@test_classes);
+    my $total_tests_run = 0;
     foreach my $test_class (@test_classes) {
         $test_class->run(@argv);
-        if (++$i < $limit) {
+        $total_tests_run += $test_class->{counters}->{run};
+        if (++$i < $limit && $test_class->{counters}->{run}) {
             print("\n");
         }
     }
 
-    print("\n");
-    print("________________________________________________________________");
-    print("________________________________________________________________\n");
+    if ($total_tests_run) {
+        print("\n");
+        print("________________________________________________________________");
+        print("________________________________________________________________\n");
+    };
     print("== SUITE SUMMARY ===============================================");
     print("================================================================\n");
 
-    $i = 0;
     foreach my $test_class (@test_classes) {
-        $test_class->print_summary();
-        if (++$i < $limit) {
-        }
+        if ($test_class->{counters}->{run}) {
+            $test_class->print_summary();
+        };
     }
 }
 
