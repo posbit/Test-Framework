@@ -63,6 +63,14 @@ $test_class->register_test_assert_false('test_register_negative_boolean_assertio
     return '';  # false-looking value
 });
 
+# failing tests
+$test_class->register_test_assert_true('test_register_failing_positive_boolean_assertion', sub {
+    return '';  # false-looking value
+});
+$test_class->register_test_assert_false('test_register_failing_negative_boolean_assertion', sub {
+    return 'true';  # true-looking value
+});
+
 
 # set early failures
 #$test_class->early_failures();
