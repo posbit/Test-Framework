@@ -351,6 +351,35 @@ sub print_summary {
     return $self;
 }
 
+sub run_suite {
+    my $suite = shift;
+
+    my @test_classes = @{$suite->{test_classes}};
+    my @argv = ($suite->{argv} || ());
+
+    my $i = 0;
+    my $limit = scalar(@test_classes);
+    foreach my $test_class (@test_classes) {
+        $test_class->run(@argv);
+        if (++$i < $limit) {
+            print("\n");
+        }
+    }
+
+    print("\n");
+    print("________________________________________________________________");
+    print("________________________________________________________________\n");
+    print("== SUITE SUMMARY ===============================================");
+    print("================================================================\n");
+
+    $i = 0;
+    foreach my $test_class (@test_classes) {
+        $test_class->print_summary();
+        if (++$i < $limit) {
+        }
+    }
+}
+
 
 ######################################################################
 # HELPER FUNCTIONS
