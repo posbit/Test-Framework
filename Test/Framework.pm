@@ -340,11 +340,13 @@ sub print_summary {
     say(" - $self->{counters}->{run} test(s) run");
     say("   + $self->{counters}->{succeeded} test(s) succeeded");
     say("   + $self->{counters}->{failed} test(s) failed");
-    say('');
-    say(" - failures:");
-    foreach (sort(keys(%{$self->{failures}}))) {
-        say("   + $_: $self->{failures}->{$_}");
-    }
+    if ($self->{counters}->{failed}) {
+        say('');
+        say(" - failures:");
+        foreach (sort(keys(%{$self->{failures}}))) {
+            say("   + $_: $self->{failures}->{$_}");
+        }
+    };
 
     return $self;
 }
