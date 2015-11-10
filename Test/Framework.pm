@@ -23,9 +23,17 @@ sub new {
 
     my $test_class = {};
     $test_class->{cases} = {};
+
     $test_class->{failures} = {};
-    $test_class->{failfast} = 0;
+    $test_class->{counters} = {
+        run => 0,
+        succeeded => 0,
+        failed => 0,
+    };
+
     $test_class->{name} = $test_class_name;
+
+    $test_class->{failfast} = 0;
 
     return bless($test_class, 'Test::Framework');
 }
@@ -293,15 +301,12 @@ sub run {
         @tests = sort(keys(%{$self->{cases}}));
     }
 
-    my $run_counter = 0;
-    my $success_counter = 0;
-    my $fail_counter = 0;
     foreach (@tests) {
         if (not defined($self->{cases}->{$_})) {
             die($self->{name} . ".$_: test not registered");
         };
 
-        ++$run_counter;
+        ++$self->{counters}->{run};
 
         print("$self->{name}.$_ ... ");
         eval {
@@ -312,7 +317,7 @@ sub run {
             chomp($@);
             say("fail: $@");
 
-            ++$fail_counter;
+            ++$self->{counters}->{failed};
             $self->{failures}->{$_} = (split('at Test/Framework', $@))[0];
 
             if ($self->{failfast}) {
@@ -322,13 +327,13 @@ sub run {
             }
         };
 
-        ++$success_counter;
+        ++$self->{counters}->{succeeded};
     }
 
     say("\n\n>>>> $self->{name}: summary");
-    say(" - $run_counter test(s) run");
-    say("   + $success_counter test(s) succeeded");
-    say("   + $fail_counter test(s) failed");
+    say(" - $self->{counters}->{run} test(s) run");
+    say("   + $self->{counters}->{succeeded} test(s) succeeded");
+    say("   + $self->{counters}->{failed} test(s) failed");
     say('');
     say(" - failures:");
     foreach (sort(keys(%{$self->{failures}}))) {
