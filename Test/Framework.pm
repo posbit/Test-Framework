@@ -54,6 +54,139 @@ sub early_failures {
 
 
 ######################################################################
+# RUNNER INTERFACE
+#
+sub run {
+    # Main function of the test framework.
+    #
+    # Expects one optional parameter:
+    #
+    # - an array of test names to run,
+    #
+    # Usually, supplied array is @ARGV of invoked script.
+    # When the array is empty, this function assumes that
+    # all tests should be run.
+    #
+    # Every test function receives one parameter - the
+    # Test::Framework object that the test is being run by.
+    # Test functions may then use helper functions like
+    # "assert_true", "assert_false", "assert_integer" etc.
+    # to assist themselves in their work.
+    #
+    my $self = shift;
+    my @tests = @_;
+
+    if (scalar(@tests) == 0) {
+        @tests = sort(keys(%{$self->{cases}}));
+    }
+
+    foreach (@tests) {
+        if ($_ eq $self->{name}) {
+            @tests = sort(keys(%{$self->{cases}}));
+            last;
+        };
+    }
+
+    foreach (@tests) {
+        my $test_class_name = $self->{name};
+        my $test_name = $_;
+
+        ++$self->{counters}->{scheduled};
+
+        if ((not $test_name =~ /^test_/) && (not $test_name =~ /\./)) {
+            next;
+        };
+        if ($test_name =~ /\./) {
+            ($test_class_name, $test_name) = split(/\./, $test_name);
+        };
+
+        if ($test_class_name ne $self->{name}) {
+            next;
+        };
+
+        if (not defined($self->{cases}->{$test_name})) {
+            die($self->{name} . ".$_: test not registered");
+        };
+
+        ++$self->{counters}->{run};
+
+        print("$test_class_name.$test_name ... ");
+        eval {
+            $self->{cases}->{$test_name}->($self);
+            say('ok');
+        };
+        if ($@) {
+            chomp($@);
+            say("fail: $@");
+
+            ++$self->{counters}->{failed};
+            $self->{failures}->{$test_name} = (split('at Test/Framework', $@))[0];
+
+            if ($self->{failfast}) {
+                last;
+            } else {
+                next;
+            }
+        };
+
+        ++$self->{counters}->{succeeded};
+    }
+
+    return $self;
+}
+
+sub print_summary {
+    my $self = shift;
+
+    say("\n>>>> $self->{name}: summary");
+    say(" - $self->{counters}->{run} test(s) run (out of $self->{counters}->{scheduled} scheduled)");
+    say("   + $self->{counters}->{succeeded} test(s) succeeded");
+    say("   + $self->{counters}->{failed} test(s) failed");
+    if ($self->{counters}->{failed}) {
+        say('');
+        say(" - failures:");
+        foreach (sort(keys(%{$self->{failures}}))) {
+            say("   + $_: $self->{failures}->{$_}");
+        }
+    };
+
+    return $self;
+}
+
+sub run_suite {
+    my $suite = shift;
+
+    my @test_classes = @{$suite->{test_classes}};
+    my @argv = ($suite->{argv} || ());
+
+    my $i = 0;
+    my $limit = scalar(@test_classes);
+    my $total_tests_run = 0;
+    foreach my $test_class (@test_classes) {
+        $test_class->run(@argv);
+        $total_tests_run += $test_class->{counters}->{run};
+        if (++$i < $limit && $test_class->{counters}->{run}) {
+            print("\n");
+        }
+    }
+
+    if ($total_tests_run) {
+        print("\n");
+        print("________________________________________________________________");
+        print("________________________________________________________________\n");
+    };
+    print("== SUITE SUMMARY ===============================================");
+    print("================================================================\n");
+
+    foreach my $test_class (@test_classes) {
+        if ($test_class->{counters}->{run}) {
+            $test_class->print_summary();
+        };
+    }
+}
+
+
+######################################################################
 # LOW LEVEL TESTING FUNCTIONS
 #
 sub register_test {
@@ -272,139 +405,6 @@ sub register_test_assert_database_row_exists {
     );
 
     return;
-}
-
-
-######################################################################
-# RUNNER INTERFACE
-#
-sub run {
-    # Main function of the test framework.
-    #
-    # Expects one optional parameter:
-    #
-    # - an array of test names to run,
-    #
-    # Usually, supplied array is @ARGV of invoked script.
-    # When the array is empty, this function assumes that
-    # all tests should be run.
-    #
-    # Every test function receives one parameter - the
-    # Test::Framework object that the test is being run by.
-    # Test functions may then use helper functions like
-    # "assert_true", "assert_false", "assert_integer" etc.
-    # to assist themselves in their work.
-    #
-    my $self = shift;
-    my @tests = @_;
-
-    if (scalar(@tests) == 0) {
-        @tests = sort(keys(%{$self->{cases}}));
-    }
-
-    foreach (@tests) {
-        if ($_ eq $self->{name}) {
-            @tests = sort(keys(%{$self->{cases}}));
-            last;
-        };
-    }
-
-    foreach (@tests) {
-        my $test_class_name = $self->{name};
-        my $test_name = $_;
-
-        ++$self->{counters}->{scheduled};
-
-        if ((not $test_name =~ /^test_/) && (not $test_name =~ /\./)) {
-            next;
-        };
-        if ($test_name =~ /\./) {
-            ($test_class_name, $test_name) = split(/\./, $test_name);
-        };
-
-        if ($test_class_name ne $self->{name}) {
-            next;
-        };
-
-        if (not defined($self->{cases}->{$test_name})) {
-            die($self->{name} . ".$_: test not registered");
-        };
-
-        ++$self->{counters}->{run};
-
-        print("$test_class_name.$test_name ... ");
-        eval {
-            $self->{cases}->{$test_name}->($self);
-            say('ok');
-        };
-        if ($@) {
-            chomp($@);
-            say("fail: $@");
-
-            ++$self->{counters}->{failed};
-            $self->{failures}->{$test_name} = (split('at Test/Framework', $@))[0];
-
-            if ($self->{failfast}) {
-                last;
-            } else {
-                next;
-            }
-        };
-
-        ++$self->{counters}->{succeeded};
-    }
-
-    return $self;
-}
-
-sub print_summary {
-    my $self = shift;
-
-    say("\n>>>> $self->{name}: summary");
-    say(" - $self->{counters}->{run} test(s) run (out of $self->{counters}->{scheduled} scheduled)");
-    say("   + $self->{counters}->{succeeded} test(s) succeeded");
-    say("   + $self->{counters}->{failed} test(s) failed");
-    if ($self->{counters}->{failed}) {
-        say('');
-        say(" - failures:");
-        foreach (sort(keys(%{$self->{failures}}))) {
-            say("   + $_: $self->{failures}->{$_}");
-        }
-    };
-
-    return $self;
-}
-
-sub run_suite {
-    my $suite = shift;
-
-    my @test_classes = @{$suite->{test_classes}};
-    my @argv = ($suite->{argv} || ());
-
-    my $i = 0;
-    my $limit = scalar(@test_classes);
-    my $total_tests_run = 0;
-    foreach my $test_class (@test_classes) {
-        $test_class->run(@argv);
-        $total_tests_run += $test_class->{counters}->{run};
-        if (++$i < $limit && $test_class->{counters}->{run}) {
-            print("\n");
-        }
-    }
-
-    if ($total_tests_run) {
-        print("\n");
-        print("________________________________________________________________");
-        print("________________________________________________________________\n");
-    };
-    print("== SUITE SUMMARY ===============================================");
-    print("================================================================\n");
-
-    foreach my $test_class (@test_classes) {
-        if ($test_class->{counters}->{run}) {
-            $test_class->print_summary();
-        };
-    }
 }
 
 
