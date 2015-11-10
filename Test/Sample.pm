@@ -6,8 +6,7 @@ use Test::More;
 use Test::Framework;
 
 
-# create test class
-my $test_class = Test::Framework->new('FrameworkTest');
+my $test_class = Test::Framework->new('FrameworkTests');
 
 
 ######################################################################
@@ -43,42 +42,39 @@ $test_class->register_test_assert_typeof('test_reigster_test_assert_typeof', 'Te
     return $framework;
 });
 
+# run tests and print summary
+$test_class->run(@ARGV);
+$test_class->print_summary();
+
 
 ######################################################################
 # SIMPLE BOOLEAN ASSERTIONS
 #
-$test_class->register_test('test_positive_boolean_assertion', sub {
+my $boolean_test_class = Test::Framework->new('BooleanTests');
+$boolean_test_class->register_test('test_positive_boolean_assertion', sub {
     my $framework = shift;
     $framework->assert_true(1);
 });
-$test_class->register_test_assert_true('test_register_positive_boolean_assertion', sub {
+$boolean_test_class->register_test_assert_true('test_register_positive_boolean_assertion', sub {
     return 'true-looking value';
 });
 
-$test_class->register_test('test_negative_boolean_assertion', sub {
+$boolean_test_class->register_test('test_negative_boolean_assertion', sub {
     my $framework = shift;
     $framework->assert_false(0);
 });
-$test_class->register_test_assert_false('test_register_negative_boolean_assertion', sub {
+$boolean_test_class->register_test_assert_false('test_register_negative_boolean_assertion', sub {
     return '';  # false-looking value
 });
 
 # failing tests
-$test_class->register_test_assert_true('test_register_failing_positive_boolean_assertion', sub {
+$boolean_test_class->register_test_assert_true('test_register_failing_positive_boolean_assertion', sub {
     return '';  # false-looking value
 });
-$test_class->register_test_assert_false('test_register_failing_negative_boolean_assertion', sub {
+$boolean_test_class->register_test_assert_false('test_register_failing_negative_boolean_assertion', sub {
     return 'true';  # true-looking value
 });
 
-
-# set early failures
-#$test_class->early_failures();
-
 # run tests and print summary
-$test_class->run(@ARGV);
-print("\n");
-$test_class->print_summary();
-
-
-done_testing();
+$boolean_test_class->run(@ARGV);
+$boolean_test_class->print_summary();
