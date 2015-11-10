@@ -330,7 +330,13 @@ sub run {
         ++$self->{counters}->{succeeded};
     }
 
-    say("\n\n>>>> $self->{name}: summary");
+    return $self;
+}
+
+sub print_summary {
+    my $self = shift;
+
+    say("\n>>>> $self->{name}: summary");
     say(" - $self->{counters}->{run} test(s) run");
     say("   + $self->{counters}->{succeeded} test(s) succeeded");
     say("   + $self->{counters}->{failed} test(s) failed");
@@ -339,6 +345,8 @@ sub run {
     foreach (sort(keys(%{$self->{failures}}))) {
         say("   + $_: $self->{failures}->{$_}");
     }
+
+    return $self;
 }
 
 

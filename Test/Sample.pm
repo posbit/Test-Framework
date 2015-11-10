@@ -64,6 +64,13 @@ $test_class->register_test_assert_false('test_register_negative_boolean_assertio
 });
 
 
-# run tests
+# set early failures
+#$test_class->early_failures();
+
+# run tests and print summary
 $test_class->run(@ARGV);
+print("\n");
+$test_class->print_summary();
+
+
 done_testing();
