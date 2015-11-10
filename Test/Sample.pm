@@ -7,7 +7,7 @@ use Test::Framework;
 
 
 my $test_class = Test::Framework->new('FrameworkTests');
-
+$test_class->early_failures(1);
 
 ######################################################################
 # POSITIVE TYPE ASSERTIONS
@@ -42,10 +42,6 @@ $test_class->register_test_assert_typeof('test_reigster_test_assert_typeof', 'Te
     return $framework;
 });
 
-# run tests and print summary
-$test_class->run(@ARGV);
-$test_class->print_summary();
-
 
 ######################################################################
 # SIMPLE BOOLEAN ASSERTIONS
@@ -75,6 +71,9 @@ $boolean_test_class->register_test_assert_false('test_register_failing_negative_
     return 'true';  # true-looking value
 });
 
-# run tests and print summary
-$boolean_test_class->run(@ARGV);
-$boolean_test_class->print_summary();
+
+
+Test::Framework::run_suite({
+    test_classes => [$test_class, $boolean_test_class],
+    argv => @ARGV,
+});
