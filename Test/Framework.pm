@@ -127,7 +127,6 @@ sub register_test_assert_true {
     # - producer function,
     #
     # Tests whether producer returns true value.
-    # Comparison is performed by ok() function from Test::More.
     #
     my $self = shift;
     my $test_name = shift;
@@ -136,7 +135,7 @@ sub register_test_assert_true {
     $self->register_test($test_name, sub {
         my $framework = shift;
         my $object = $producer_callback->($framework);
-        ok($object, $test_name);
+        $self->assert_true($object);
     });
 
     return;
@@ -151,7 +150,6 @@ sub register_test_assert_false {
     # - producer function,
     #
     # Tests whether producer returns false value.
-    # Comparison is performed by ok() function from Test::More.
     #
     my $self = shift;
     my $test_name = shift;
@@ -160,7 +158,7 @@ sub register_test_assert_false {
     $self->register_test($test_name, sub {
         my $framework = shift;
         my $object = $producer_callback->($framework);
-        ok((not $object), $test_name);
+        $self->assert_false($object);
     });
 
     return;
