@@ -24,9 +24,23 @@ sub new {
     my $test_class = {};
     $test_class->{cases} = {};
     $test_class->{failures} = {};
+    $test_class->{failfast} = 0;
     $test_class->{name} = $test_class_name;
 
     return bless($test_class, 'Test::Framework');
+}
+
+
+sub early_failures {
+    my $self = shift;
+    my $value = shift;
+
+    if (not defined($value)) {
+        $value = 1;
+    };
+    $self->{failfast} = 1;
+
+    return $self;
 }
 
 
@@ -301,7 +315,11 @@ sub run {
             ++$fail_counter;
             $self->{failures}->{$_} = (split('at Test/Framework', $@))[0];
 
-            next;
+            if ($self->{failfast}) {
+                last;
+            } else {
+                next;
+            }
         };
 
         ++$success_counter;
