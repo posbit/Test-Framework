@@ -35,6 +35,7 @@ sub new {
     $test_class->{name} = $test_class_name;
 
     $test_class->{failfast} = 0;
+    $test_class->{muted_stdout} = 0;
 
     return bless($test_class, 'Test::Framework');
 }
@@ -52,10 +53,28 @@ sub early_failures {
     return $self;
 }
 
+sub mute_stdout {
+    my $self = shift;
+    my $value = shift;
+
+    if (not defined($value)) {
+        $value = 1;
+    };
+    $self->{muted_stdout} = 1;
+
+    return $self;
+}
+
 
 ######################################################################
 # RUNNER INTERFACE
 #
+sub _capture_output {
+    my ($channel, $mode, $io) = @_;
+    open($io, ($mode || '>'), $channel) or die($!);
+    return select($io);
+}
+
 sub run {
     # Main function of the test framework.
     #
@@ -111,13 +130,22 @@ sub run {
         ++$self->{counters}->{run};
 
         print("$test_class_name.$test_name ... ");
+
+        my $captured_output = '';
+        my $stdout = _capture_output(\$captured_output);
         eval {
             $self->{cases}->{$test_name}->($self);
+            select($stdout);
             say('ok');
+            if (not $self->{muted_stdout}) {
+                say($captured_output);
+            };
         };
         if ($@) {
+            select($stdout);
             chomp($@);
             say("fail: $@");
+            say($captured_output);
 
             ++$self->{counters}->{failed};
             $self->{failures}->{$test_name} = (split('at Test/Framework', $@))[0];
