@@ -36,6 +36,7 @@ sub new {
 
     $test_class->{failfast} = 0;
     $test_class->{muted_stdout} = 0;
+    $test_class->{verbosity} = 0;
 
     return bless($test_class, 'Test::Framework');
 }
@@ -49,6 +50,18 @@ sub early_failures {
         $value = 1;
     };
     $self->{failfast} = 1;
+
+    return $self;
+}
+
+sub verbose {
+    my $self = shift;
+    my $value = shift;
+
+    if (not defined($value)) {
+        $value = 1;
+    };
+    $self->{verbosity} = $value;
 
     return $self;
 }
