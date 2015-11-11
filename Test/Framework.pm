@@ -73,7 +73,7 @@ sub mute_stdout {
     if (not defined($value)) {
         $value = 1;
     };
-    $self->{muted_stdout} = 1;
+    $self->{muted_stdout} = $value;
 
     return $self;
 }
