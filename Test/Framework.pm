@@ -448,6 +448,49 @@ sub register_test_assert_database_row_exists {
     return;
 }
 
+sub register_test_assert_database_row_not_exists {
+    # Tests whether specified database row does not exist.
+    #
+    # Expects four parameters:
+    #
+    # - test name,
+    # - database table name,
+    # - producer function,
+    # - database handle,
+    #
+    # Tests whether producer function created row in a database table.
+    # Test is performed by not_row_ok() function from Test::DatabaseRow.
+    #
+    # Producer function MUST return an arrayref which will be used as
+    # a "where" parameter for all_row_ok().
+    #
+    # Supplied database table name MUST exist in a database pointed to by
+    # supplied handle.
+    #
+    my $self = shift;
+    my $test_name = shift;
+    my $table_name  = shift;
+    my $producer_callback = shift;
+    my $handle = shift;
+
+    $self->register_test(
+        $test_name,
+        sub {
+            my $framework = shift;
+
+            local $Test::DatabaseRow::dbh = $handle;
+            my $row_spec = {};
+            $row_spec->{table} = $table_name;
+            $row_spec->{where} = $producer_callback->($framework);
+            $row_spec->{description} = $test_name;
+            $row_spec->{tests} = $row_spec->{where};
+            not_row_ok(%$row_spec);
+        }
+    );
+
+    return;
+}
+
 
 ######################################################################
 # HELPER FUNCTIONS
