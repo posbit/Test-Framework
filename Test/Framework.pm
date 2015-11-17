@@ -395,10 +395,9 @@ sub register_test_assert_database_row {
         $test_name,
         sub {
             my $framework = shift;
-            local $Test::DatabaseRow::dbh = $handle;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            $framework->assert_database_row($row_spec);
+            $framework->assert_database_row($handle, $row_spec);
         }
     );
 
@@ -435,12 +434,11 @@ sub register_test_assert_database_row_exists {
         sub {
             my $framework = shift;
 
-            local $Test::DatabaseRow::dbh = $handle;
             my $row_spec = {};
             $row_spec->{table} = $table_name;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            $framework->assert_database_row_exists($row_spec);
+            $framework->assert_database_row_exists($handle, $row_spec);
         }
     );
 
@@ -477,12 +475,11 @@ sub register_test_assert_database_row_not_exists {
         sub {
             my $framework = shift;
 
-            local $Test::DatabaseRow::dbh = $handle;
             my $row_spec = {};
             $row_spec->{table} = $table_name;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            $framework->assert_database_row_not_exists($row_spec);
+            $framework->assert_database_row_not_exists($handle, $row_spec);
         }
     );
 
@@ -666,23 +663,29 @@ sub assert_not_typeof {
 
 sub assert_database_row {
     my $self = shift;
+    my $handle = shift;
     my $row_spec = shift;
 
+    local $Test::DatabaseRow::dbh = $handle;
     all_row_ok(%{$row_spec});
 }
 
 sub assert_database_row_exists {
     my $self = shift;
+    my $handle = shift;
     my $row_spec = shift;
 
+    local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
     all_row_ok(%{$row_spec});
 }
 
 sub assert_database_row_not_exists {
     my $self = shift;
+    my $handle = shift;
     my $row_spec = shift;
 
+    local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
     not_row_ok(%{$row_spec});
 }
