@@ -398,7 +398,7 @@ sub register_test_assert_database_row {
             local $Test::DatabaseRow::dbh = $handle;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            all_row_ok(%$row_spec);
+            $framework->assert_database_row($row_spec);
         }
     );
 
@@ -440,8 +440,7 @@ sub register_test_assert_database_row_exists {
             $row_spec->{table} = $table_name;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            $row_spec->{tests} = $row_spec->{where};
-            all_row_ok(%$row_spec);
+            $framework->assert_database_row_exists($row_spec);
         }
     );
 
@@ -483,8 +482,7 @@ sub register_test_assert_database_row_not_exists {
             $row_spec->{table} = $table_name;
             $row_spec->{where} = $producer_callback->($framework);
             $row_spec->{description} = $test_name;
-            $row_spec->{tests} = $row_spec->{where};
-            not_row_ok(%$row_spec);
+            $framework->assert_database_row_not_exists($row_spec);
         }
     );
 
@@ -664,6 +662,29 @@ sub assert_not_typeof {
     if ($expected_type_name eq $object_type_name) {
         die("assert_not_typeof() failed: $expected_type_name == $object_type_name");
     };
+}
+
+sub assert_database_row {
+    my $self = shift;
+    my $row_spec = shift;
+
+    all_row_ok(%{$row_spec});
+}
+
+sub assert_database_row_exists {
+    my $self = shift;
+    my $row_spec = shift;
+
+    $row_spec->{tests} = $row_spec->{where};
+    all_row_ok(%{$row_spec});
+}
+
+sub assert_database_row_not_exists {
+    my $self = shift;
+    my $row_spec = shift;
+
+    $row_spec->{tests} = $row_spec->{where};
+    not_row_ok(%{$row_spec});
 }
 
 
