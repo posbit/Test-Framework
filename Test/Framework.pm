@@ -200,7 +200,12 @@ sub run_suite {
     my $suite = shift;
 
     my @test_classes = @{$suite->{test_classes}};
-    my @argv = ($suite->{argv} || ());
+    my @argv = undef;
+    if (not defined($suite->{argv})) {
+        @argv = ();
+    } else {
+        @argv = @{$suite->{argv}};
+    }
 
     my $i = 0;
     my $limit = scalar(@test_classes);
