@@ -162,7 +162,7 @@ sub run {
             say($captured_output);
 
             ++$self->{counters}->{failed};
-            $self->{failures}->{$test_name} = (split('at Test/Framework', $@))[0];
+            $self->{failures}->{$test_name} = (split('at (?:lib/)?Test/Framework', $@))[0];
 
             if ($self->{failfast}) {
                 last;
