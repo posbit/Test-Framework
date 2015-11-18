@@ -184,6 +184,7 @@ sub print_summary {
     say(" - $self->{counters}->{run} test(s) run (out of $self->{counters}->{scheduled} scheduled)");
     say("   + $self->{counters}->{succeeded} test(s) succeeded");
     say("   + $self->{counters}->{failed} test(s) failed");
+    say("   + $self->{counters}->{assertions} assertions(s) total");
     if ($self->{counters}->{failed}) {
         say('');
         say(" - failures:");
