@@ -30,6 +30,7 @@ sub new {
         succeeded => 0,
         failed => 0,
         scheduled => 0,
+        assertions => 0,
     };
 
     $test_class->{name} = $test_class_name;
@@ -553,10 +554,17 @@ sub get_typeof {
     return $object_type_name;
 }
 
+sub _increase_assertion_counter {
+    my $self = shift;
+
+    ++$self->{counters}->{assertions};
+}
+
 sub assert_true {
     my $self = shift;
     my $value = shift;
 
+    $self->_increase_assertion_counter();
     my $result = $self->to_boolean($value);
     if ((not $result)) {
         die("assert_true() expected true, got: $value");
@@ -569,6 +577,7 @@ sub assert_false {
     my $self = shift;
     my $value = shift;
 
+    $self->_increase_assertion_counter();
     my $result = $self->to_boolean($value);
     if ($result) {
         die("assert_false() expected false, got: $value");
@@ -582,6 +591,7 @@ sub assert_eq {
     my $left_value = shift;
     my $right_value = shift;
 
+    $self->_increase_assertion_counter();
     if ((not ($left_value eq $right_value))) {
         die("assert_eq() failed: `$left_value` eq `$right_value`");
     };
@@ -594,6 +604,7 @@ sub assert_ne {
     my $left_value = shift;
     my $right_value = shift;
 
+    $self->_increase_assertion_counter();
     if ((not ($left_value ne $right_value))) {
         die("assert_ne() failed: `$left_value` ne `$right_value`");
     };
@@ -606,6 +617,7 @@ sub assert_numeric_eq {
     my $left_value = shift;
     my $right_value = shift;
 
+    $self->_increase_assertion_counter();
     if (not $self->is_numeric($left_value)) {
         die("assert_numeric_eq() failed: lhs value not numeric `$left_value`");
     }
@@ -625,6 +637,7 @@ sub assert_numeric_ne {
     my $left_value = shift;
     my $right_value = shift;
 
+    $self->_increase_assertion_counter();
     if (not $self->is_numeric($left_value)) {
         die("assert_numeric_ne() failed: lhs value not numeric `$left_value`");
     }
@@ -644,6 +657,7 @@ sub assert_typeof {
     my $expected_type_name = shift;
     my $object = shift;
 
+    $self->_increase_assertion_counter();
     my $object_type_name = $self->get_typeof($object, @_);
     if ($expected_type_name ne $object_type_name) {
         die("assert_typeof() failed: $expected_type_name != $object_type_name");
@@ -655,6 +669,7 @@ sub assert_not_typeof {
     my $expected_type_name = shift;
     my $object = shift;
 
+    $self->_increase_assertion_counter();
     my $object_type_name = $self->get_typeof($object, @_);
     if ($expected_type_name eq $object_type_name) {
         die("assert_not_typeof() failed: $expected_type_name == $object_type_name");
@@ -666,6 +681,7 @@ sub assert_database_row {
     my $handle = shift;
     my $row_spec = shift;
 
+    $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
     all_row_ok(%{$row_spec});
 }
@@ -675,6 +691,7 @@ sub assert_database_row_exists {
     my $handle = shift;
     my $row_spec = shift;
 
+    $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
     all_row_ok(%{$row_spec});
@@ -685,6 +702,7 @@ sub assert_database_row_not_exists {
     my $handle = shift;
     my $row_spec = shift;
 
+    $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
     not_row_ok(%{$row_spec});
