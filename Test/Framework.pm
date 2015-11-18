@@ -684,7 +684,11 @@ sub assert_database_row {
 
     $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
-    all_row_ok(%{$row_spec});
+
+    my $result = all_row_ok(%{$row_spec});
+    if ($result == 0) {
+        die("assert_database_row() failed");
+    };
 }
 
 sub assert_database_row_exists {
@@ -695,7 +699,11 @@ sub assert_database_row_exists {
     $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
-    all_row_ok(%{$row_spec});
+
+    my $result = all_row_ok(%{$row_spec});
+    if ($result == 0) {
+        die("assert_database_row_exists() failed");
+    };
 }
 
 sub assert_database_row_not_exists {
@@ -706,7 +714,11 @@ sub assert_database_row_not_exists {
     $self->_increase_assertion_counter();
     local $Test::DatabaseRow::dbh = $handle;
     $row_spec->{tests} = $row_spec->{where};
-    not_row_ok(%{$row_spec});
+
+    my $result = not_row_ok(%{$row_spec});
+    if ($result == 0) {
+        die("assert_database_row_not_exists() failed");
+    };
 }
 
 
