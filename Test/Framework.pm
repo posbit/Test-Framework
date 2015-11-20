@@ -369,6 +369,36 @@ sub register_test_assert_false {
     return;
 }
 
+sub register_test_assert_equal {
+    my $self = shift;
+    my $test_name = shift;
+    my $expected = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_numeric_eq($expected, $object);
+    });
+
+    return;
+}
+
+sub register_test_assert_not_equal {
+    my $self = shift;
+    my $test_name = shift;
+    my $expected = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_numeric_ne($expected, $object);
+    });
+
+    return;
+}
+
 
 ######################################################################
 # HIGH LEVEL TESTING FUNCTIONS
