@@ -399,6 +399,70 @@ sub register_test_assert_not_equal {
     return;
 }
 
+sub register_test_assert_dies {
+    # Tests for die() being called.
+    #
+    # Expects two parameters:
+    #
+    # - test name,
+    # - producer function,
+    #
+    # Tests whether producer dies.
+    #
+    my $self = shift;
+    my $test_name = shift;
+    my $expected_result = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+
+        my $error = undef;
+        eval {
+            $producer_callback->($framework);
+        };
+        if ($@) {
+            $error = $@;
+        };
+        $framework->assert_true($error);
+    });
+
+    return;
+}
+
+sub register_test_assert_dies_with {
+    # Tests for die() being called with expected result.
+    #
+    # Expects three parameters:
+    #
+    # - test name,
+    # - expected die() result,
+    # - producer function,
+    #
+    # Tests whether producer dies with expected value.
+    #
+    my $self = shift;
+    my $test_name = shift;
+    my $expected_result = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+
+        my $error = undef;
+        eval {
+            $producer_callback->($framework);
+        };
+        if ($@) {
+            $error = $@;
+        };
+        $framework->assert_true($error);
+        $framework->assert_eq($expected_result, $error);
+    });
+
+    return;
+}
+
 
 ######################################################################
 # HIGH LEVEL TESTING FUNCTIONS
