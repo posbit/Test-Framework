@@ -233,6 +233,13 @@ sub run_suite {
     }
 }
 
+sub list_tests {
+    my $self = shift;
+
+    my @test_cases = keys(%{$self->{cases}});
+    return \@test_cases;
+}
+
 
 ######################################################################
 # LOW LEVEL TESTING FUNCTIONS
