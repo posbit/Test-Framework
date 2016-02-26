@@ -826,5 +826,24 @@ sub assert_database_row_not_exists {
     };
 }
 
+sub assert_dies {
+    my $self = shift;
+    my $expected_value = shift;
+    my $producer = shift;
+
+    $self->_increase_assertion_counter();
+    eval {
+        $producer->($self);
+    };
+    if ($@) {
+        if ($@ ne $expected_value) {
+            die("assert_dies() failed: `$expected_value` eq `$@`");
+        }
+    } else {
+        die("assert_dies() failed: producer didn't die");
+    };
+
+    return;
+}
 
 1;
