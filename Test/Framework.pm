@@ -418,7 +418,6 @@ sub register_test_assert_dies {
     #
     my $self = shift;
     my $test_name = shift;
-    my $expected_result = shift;
     my $producer_callback = shift;
 
     $self->register_test($test_name, sub {
