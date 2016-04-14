@@ -210,11 +210,19 @@ sub run_suite {
     my $i = 0;
     my $limit = scalar(@test_classes);
     my $total_tests_run = 0;
+    my $failed = 0;
+    my @run_test_classes = ();
     foreach my $test_class (@test_classes) {
+        push(@run_test_classes, $test_class);
         $test_class->run(@argv);
         $total_tests_run += $test_class->{counters}->{run};
         if (++$i < $limit && $test_class->{counters}->{run}) {
             print("\n");
+        }
+        if ($test_class->{counters}->{failed}) {
+            # first failed test class fails whole suite
+            $failed = 1;
+            last;
         }
     }
 
@@ -226,10 +234,13 @@ sub run_suite {
     print("== SUITE SUMMARY ===============================================");
     print("================================================================\n");
 
-    foreach my $test_class (@test_classes) {
+    foreach my $test_class (@run_test_classes) {
         if ($test_class->{counters}->{run}) {
             $test_class->print_summary();
         };
+    }
+    if ($failed) {
+        exit(1);
     }
 }
 
