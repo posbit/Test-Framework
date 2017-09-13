@@ -39,6 +39,7 @@ sub new {
     $test_class->{muted_stdout} = 0;
     $test_class->{verbosity} = 0;
     $test_class->{per_test_reports} = 0;
+    $test_class->{summary_fn} = undef;
 
     return bless($test_class, 'Test::Framework');
 }
@@ -134,6 +135,26 @@ sub running_reports {
         $value = 1;
     };
     $self->{per_test_reports} = $value;
+
+    return $self;
+}
+
+sub summary_logger {
+    # Call this function to set a function that will be used to log
+    # the summary of a test run.
+    #
+    # Use `undef' to use default logger.
+    #
+    # The logger function will receive the following arguments:
+    #
+    #   0. a test runner instance
+    #   1. number of tests run
+    #   2. a boolean indicator specifying if the suite failed
+    #
+    my $self = shift;
+    my $fn = shift;
+
+    $self->{summary_fn} = $fn;
 
     return $self;
 }
@@ -291,18 +312,22 @@ sub run_suite {
         }
     }
 
-    if ($total_tests_run) {
-        print("\n");
-        print("________________________________________________________________");
-        print("________________________________________________________________\n");
-    };
-    print("== SUITE SUMMARY ===============================================");
-    print("================================================================\n");
-
-    foreach my $test_class (@run_test_classes) {
-        if ($test_class->{counters}->{run}) {
-            $test_class->print_summary();
+    if (not defined($self->{summary_fn})) {
+        if ($total_tests_run) {
+            print("\n");
+            print("________________________________________________________________");
+            print("________________________________________________________________\n");
         };
+        print("== SUITE SUMMARY ===============================================");
+        print("================================================================\n");
+
+        foreach my $test_class (@run_test_classes) {
+            if ($test_class->{counters}->{run}) {
+                $test_class->print_summary();
+            };
+        }
+    } else {
+        $self->{summary_fn}->($self, $total_tests_run, $failed);
     }
     if ($failed) {
         exit(1);
