@@ -145,11 +145,9 @@ sub summary_logger {
     #
     # Use `undef' to use default logger.
     #
-    # The logger function will receive the following arguments:
-    #
-    #   0. a test runner instance
-    #   1. number of tests run
-    #   2. a boolean indicator specifying if the suite failed
+    # The logger function will receive a single argument: a test
+    # runner instance, from which all information about the suite run
+    # can be extracted.
     #
     my $self = shift;
     my $fn = shift;
@@ -264,6 +262,7 @@ sub run {
 }
 
 sub print_summary {
+    # The default summary printer.
     my $self = shift;
 
     say("\n>>>> $self->{name}: summary");
@@ -327,7 +326,7 @@ sub run_suite {
             };
         }
     } else {
-        $self->{summary_fn}->($self, $total_tests_run, $failed);
+        $self->{summary_fn}->($self);
     }
     if ($failed) {
         exit(1);
