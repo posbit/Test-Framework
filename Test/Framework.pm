@@ -45,6 +45,18 @@ sub new {
 
 
 sub early_failures {
+    # Call this function if you want to enable or
+    # disable early failures.
+    # If enabled, early failures make the test suite fail
+    # as soon as first test failes.
+    #
+    # By default, calling this function will *enable*
+    # early failures.
+    #
+    #       $suite->early_failures();   # enable early failures
+    #       $suite->early_failures(1);  # enable early failures
+    #       $suite->early_failures(0);  # disable early failures
+    #
     my $self = shift;
     my $value = shift;
 
@@ -57,6 +69,10 @@ sub early_failures {
 }
 
 sub verbose {
+    # Call this function if you want to set verbosity level.
+    #
+    # By default, calling this function will set the level to 1.
+    #
     my $self = shift;
     my $value = shift;
 
@@ -69,6 +85,21 @@ sub verbose {
 }
 
 sub mute_stdout {
+    # Call this function if you want to mute or
+    # unmute stdout emitted by functions running as tests.
+    # Useful if, for example, the functions you call use
+    # print() for logging.
+    #
+    # By default, calling this function will *mute*
+    # the stdout.
+    #
+    #       $suite->mute_stdout();   # mute standard output
+    #       $suite->mute_stdout(1);  # mute standard output
+    #       $suite->mute_stdout(0);  # unmute standard output
+    #
+    # Also, note that this function only *tries to* mute the
+    # stdout and may not always succeed.
+    #
     my $self = shift;
     my $value = shift;
 
