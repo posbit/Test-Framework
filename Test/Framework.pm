@@ -38,6 +38,7 @@ sub new {
     $test_class->{failfast} = 0;
     $test_class->{muted_stdout} = 0;
     $test_class->{verbosity} = 0;
+    $test_class->{per_test_reports} = 0;
 
     return bless($test_class, 'Test::Framework');
 }
@@ -75,6 +76,33 @@ sub mute_stdout {
         $value = 1;
     };
     $self->{muted_stdout} = $value;
+
+    return $self;
+}
+
+sub running_reports {
+    # Call this function if you want to enable or
+    # disable per-test report lines.
+    # If enabled, per-test reports print short status reports
+    # for each test that is run:
+    #
+    #   TestClass.test_case_0 ... ok
+    #   TestClass.test_case_1 ... fail: OH NOES
+    #
+    # By default, calling this function will *enable*
+    # per-test reports.
+    #
+    #       $suite->running_reports();   # enable per-test reports
+    #       $suite->running_reports(1);  # enable per-test reports
+    #       $suite->running_reports(0);  # disable per-test reports
+    #
+    my $self = shift;
+    my $value = shift;
+
+    if (not defined($value)) {
+        $value = 1;
+    };
+    $self->{per_test_reports} = $value;
 
     return $self;
 }
@@ -143,14 +171,18 @@ sub run {
 
         ++$self->{counters}->{run};
 
-        print("$test_class_name.$test_name ... ");
+        if ($self->{per_test_reports}) {
+            print("$test_class_name.$test_name ... ");
+        }
 
         my $captured_output = '';
         my $stdout = _capture_output(\$captured_output);
         eval {
             $self->{cases}->{$test_name}->($self);
             select($stdout);
-            say('ok');
+            if ($self->{per_test_reports}) {
+                say('ok');
+            }
             if (not $self->{muted_stdout}) {
                 say($captured_output);
             };
@@ -158,7 +190,9 @@ sub run {
         if ($@) {
             select($stdout);
             chomp($@);
-            say("fail: $@");
+            if ($self->{per_test_reports}) {
+                say("fail: $@");
+            }
             say($captured_output);
 
             ++$self->{counters}->{failed};
