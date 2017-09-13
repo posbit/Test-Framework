@@ -50,7 +50,7 @@ sub early_failures {
     if (not defined($value)) {
         $value = 1;
     };
-    $self->{failfast} = 1;
+    $self->{failfast} = $value;
 
     return $self;
 }
