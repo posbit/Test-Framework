@@ -453,6 +453,52 @@ sub register_test_assert_true {
     return;
 }
 
+sub register_test_assert_defined {
+    # Tests for defined values.
+    #
+    # Expects two parameters:
+    #
+    # - test name,
+    # - producer function,
+    #
+    # Tests whether producer returns a defined value.
+    #
+    my $self = shift;
+    my $test_name = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_true(defined($object));
+    });
+
+    return;
+}
+
+sub register_test_assert_not_defined {
+    # Tests for defined values.
+    #
+    # Expects two parameters:
+    #
+    # - test name,
+    # - producer function,
+    #
+    # Tests whether producer returns an undefined value (i.e. the literal `undef`).
+    #
+    my $self = shift;
+    my $test_name = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_true(not defined($object));
+    });
+
+    return;
+}
+
 sub register_test_assert_false {
     # Tests for false values.
     #
