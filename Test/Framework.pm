@@ -552,6 +552,36 @@ sub register_test_assert_not_equal {
     return;
 }
 
+sub register_test_assert_string_eq {
+    my $self = shift;
+    my $test_name = shift;
+    my $expected = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_eq($expected, $object);
+    });
+
+    return;
+}
+
+sub register_test_assert_string_ne {
+    my $self = shift;
+    my $test_name = shift;
+    my $expected = shift;
+    my $producer_callback = shift;
+
+    $self->register_test($test_name, sub {
+        my $framework = shift;
+        my $object = $producer_callback->($framework);
+        $self->assert_ne($expected, $object);
+    });
+
+    return;
+}
+
 sub register_test_assert_dies {
     # Tests for die() being called.
     #
