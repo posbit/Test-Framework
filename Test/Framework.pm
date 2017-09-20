@@ -313,7 +313,7 @@ sub run_suite {
         }
     }
 
-    if (not defined($self->{summary_fn})) {
+    if (not defined($suite->{summary_fn})) {
         if ($total_tests_run) {
             print("\n");
             print("________________________________________________________________");
@@ -328,7 +328,7 @@ sub run_suite {
             };
         }
     } else {
-        $self->{summary_fn}->($self);
+        $suite->{summary_fn}->($suite);
     }
     if ($failed) {
         exit(1);
