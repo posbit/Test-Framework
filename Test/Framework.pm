@@ -303,7 +303,7 @@ sub run_suite {
         push(@run_test_classes, $test_class);
         $test_class->run(@argv);
         $total_tests_run += $test_class->{counters}->{run};
-        if (++$i < $limit && $test_class->{counters}->{run}) {
+        if (++$i < $limit && $test_class->{counters}->{run} && $suite->{per_test_reports}) {
             print("\n");
         }
         if ($test_class->{counters}->{failed}) {
