@@ -233,7 +233,7 @@ sub run {
             if ($self->{per_test_reports}) {
                 say('ok');
             }
-            if (not $self->{muted_stdout}) {
+            if ((not $self->{muted_stdout}) && $self->{per_test_reports}) {
                 say($captured_output);
             };
         };
@@ -243,7 +243,9 @@ sub run {
             if ($self->{per_test_reports}) {
                 say("fail: $@");
             }
-            say($captured_output);
+            if ($self->{per_test_reports}) {
+                say($captured_output);
+            }
 
             ++$self->{counters}->{failed};
             $self->{failures}->{$test_name} = (split('at (?:lib/)?Test/Framework', $@))[0];
