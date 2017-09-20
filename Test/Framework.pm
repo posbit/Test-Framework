@@ -936,6 +936,30 @@ sub assert_numeric_ne {
     return;
 }
 
+sub assert_numeric_almost_eq {
+    my $self = shift;
+    my $left_value = shift;
+    my $right_value = shift;
+    my $delta = shift;
+
+    $self->_increase_assertion_counter();
+    if (not $self->is_numeric($left_value)) {
+        die("assert_numeric_almost_eq() failed: lhs value not numeric `$left_value`");
+    }
+    if (not $self->is_numeric($right_value)) {
+        die("assert_numeric_almost_eq() failed: rhs value not numeric `$right_value`");
+    }
+    if (not $self->is_numeric($delta)) {
+        die("assert_numeric_almost_eq() failed: delta value not numeric `$delta`");
+    }
+
+    if (not (($left_value > ($right_value - $delta)) && ($left_value < ($right_value + $delta)))) {
+        die("assert_numeric_almost_eq() failed: $left_value == ($right_value +- $delta)");
+    };
+
+    return;
+}
+
 sub assert_typeof {
     my $self = shift;
     my $expected_type_name = shift;
